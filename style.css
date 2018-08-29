@@ -28,7 +28,8 @@ body {
 
 .part-of-the-snake {
     background-color: rebeccapurple;
-    border: 1px solid white
+    border: 1px solid white;
+    z-index: 2;
 }
 
 .lose-screen {
@@ -41,4 +42,21 @@ body {
 
 .is-transparent {
     opacity: 0.5;
+}
+
+.point-element {
+    width: 40px;
+    height: 40px;
+    background-image: url(image/point-icon.jpg);
+    background-position: 50% 50%;
+    background-size: cover; 
+}
+
+.he-ate-me {
+    background-color: rebeccapurple !important;
+}
+
+.point {
+    font-size: 30px;
+    margin-top: 20px;
 }
