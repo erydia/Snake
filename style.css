@@ -52,11 +52,25 @@ body {
     background-size: cover; 
 }
 
-.he-ate-me {
-    background-color: rebeccapurple !important;
-}
-
 .point {
     font-size: 30px;
     margin-top: 20px;
+}
+
+.container section {
+    display: flex;
+    justify-content: space-between;
+    width: 800px;
+}
+
+button {
+    height: 40px;
+    width: 120px;
+    border: 1px solid black;
+    outline: none;
+    margin-top: 20px;
+    margin-right: 20px;
+    background-color: white;
+    font-size: 25px;
+    font-family: 'Times New Roman', Times, serif;
 }
