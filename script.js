@@ -7,11 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const startEl = document.querySelector('.start');
     const pauseEl = document.querySelector('.pause');
 
+    let snakeMovementInterval;
+    let drawingPointElementInHtmlInterval;
+    let drawingSnakeInHtmlInterval;
+
     // Zmienne przechowujące pozycje X jak i Y.
-    const positionX = 20;
-    const positionY = 20;
+    const boardSizeX = 20;
+    const boardSizeY = 20;
+
     // Pusta tablica na kafelki jakie będą na planszy.
-    let arrayTiles = [];
+    const arrayTiles = [];
+
     // Tablica która zawiera możliwe kierunki ruchu.
     let directionsMovements = ['ArrowUp', 'ArrowDown', 'ArrowRight', 'ArrowLeft'];
     // Zmienna, która zwiera aktualny kierunek ruchu.
@@ -33,11 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let pause = false;
 
     // Stworzenie dwuwymiarowej tablicy - 20x20
-    for (let i = 0; i < positionY; i++) {
+    for (let i = 0; i < boardSizeY; i++) {
         arrayTiles[i] = [];
     };
-    for (let y = 0; y < positionX; ++y) {
-        for (let x = 0; x < positionY; ++x ) {
+    for (let y = 0; y < boardSizeX; ++y) {
+        for (let x = 0; x < boardSizeY; ++x ) {
             // Stworzenie dynamicznie diva który będzie kafelkiem, wystylizowanie go.
             let tile = document.createElement('div');
             tile.classList.add('tile-board');
@@ -58,36 +64,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateLenghtSnake = () => {
         // Usunięcie klasy stylizującej węża z ostatniego elementu tablicy.
         let lenghtSnake = snake.length;
-        snake[lenghtSnake-1].classList.remove('part-of-the-snake');
+        const lastElementIndex = lenghtSnake - 1;
+        snake[lastElementIndex].classList.remove('part-of-the-snake');
         // Usunięcie ostatniego elementu z tablicy.
-        snake.splice(lenghtSnake-1, 1); 
+        snake.splice(lastElementIndex, 1); 
     };
+
+    // Podejście przed ES6
+    // const directionBlockMap = {
+    //     ArrowUp: 'ArrowDown',
+    //     ArrowDown: 'ArrowUp',
+    //     ArrowLeft: 'ArrowRight',
+    //     ArrowRight: 'ArrowLeft',
+    // };
+
+    const directionBlockMap = new Map();
+
+    // ustawiamy przeciwne kierunki dla kazdej z wartosci w mapie
+    directionBlockMap.set('ArrowUp', 'ArrowDown');
+    directionBlockMap.set('ArrowDown', 'ArrowUp');
+    directionBlockMap.set('ArrowLeft', 'ArrowRight');
+    directionBlockMap.set('ArrowRight', 'ArrowLeft');
+
+    // directionBlockMap.set
+    // directionBlockMap.get
+    // directionBlockMap.has
+    // directionBlockMap.delete
+
 
     // Funkcja, która blokuje przeciwny ruch do wybranego (gdy wąż rusza się w prawo, nie możemy wykonać ruchu w lewo).
     const checkingTheDirection = () => {
         // Aktualizacja tablicy.
         directionsMovements = ['ArrowUp', 'ArrowDown', 'ArrowRight', 'ArrowLeft'];
         // Usunięcie z tablicy ruchu przeciwnego do ruchu w góre.
-        if (direction === 'ArrowUp') {
-            let index = directionsMovements.indexOf('ArrowDown');
-            directionsMovements.splice(index, 1);
-        // Usunięcie z tablicy ruchu przeciwnego do ruchu w dół.    
-        } else if (direction === 'ArrowDown') {
-            let index = directionsMovements.indexOf('ArrowUp');
-            directionsMovements.splice(index, 1);
-         // Usunięcie z tablicy ruchu przeciwnego do ruchu w lewo.    
-        } else if (direction === 'ArrowLeft') {
-            let index = directionsMovements.indexOf('ArrowRight');
-            directionsMovements.splice(index, 1);
-        // Usunięcie z tablicy ruchu przeciwnego do ruchu w prawo.
-        } else if (direction === 'ArrowRight') {
-            let index = directionsMovements.indexOf('ArrowLeft');
-            directionsMovements.splice(index, 1);
-        };
+        
+        // pobieramy przeciwny kierunek do obecnego
+        const blockedDirection = directionBlockMap.get(direction);
+
+        // pobieramy index 
+        const forbiddenDirectionIndex = directionsMovements.indexOf(blockedDirection);
+
+        // usuwamy wpis
+        directionsMovements.splice(forbiddenDirectionIndex, 1);
     };
 
     // Tablica która przechowuje kafelki na których wąż się znajduje.
-    let snake = [arrayTiles[4][8], arrayTiles[5][8], arrayTiles[6][8], arrayTiles[7][8], arrayTiles[8][8], arrayTiles[9][8], arrayTiles[10][8], arrayTiles[11][8]];
+    // moznaby zamknac to w setSnakePosition() jako helper
+    const snake = [];
+
+    const initialSnakeLength = 8;
+
+    for (let i = 0; i < initialSnakeLength; i++) {
+        snake.push(arrayTiles[4+i][8]);
+    }
+
     // Wyświetlenie węża na planszy.
     displaySnake();
 
@@ -104,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Punkt został wyświetlony - zmianna zmiennej na true.
         thePointInBoard = true;
         // Zmienna która trzyma odpowiednie wyrażenie do losowania pozycji.
-        const randomPosition = Math.floor(Math.random() * 19);
+        const randomPosition = Math.floor(Math.random() * (boardSizeX - 1));
         // Losowanie pozycji na osi x punktu.
         let elementPositionX = randomPosition;
         // Losowanie pozycji na osi y punktu.
@@ -150,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funkcja która sprawdza czy wąż nie uderzył w krawędź planszy.
     const checkingTheEdgeOfTheBoard = (position) => {
         // Jeśli pozycja węża wyjdzie poza plansze gra zostaje przerwana.
-        if (position < 0 || position > 19) {
+        if (position < 0 || position > (boardSizeX - 1)) {
             loseGame();
         };
     };
@@ -167,94 +197,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
     //Funkcja obsługująca przegraną gracza.
     const loseGame = () => {
-        //isGameLost = true;
         // Dodanie przeźroczystości planszy.
         boardEl.classList.add('is-transparent');
         // Wyświetlenie informacji o przegranej w htmlu.
         loseScreenEl.innerText = 'Przegrałeś :(';
         // Przerwanie ruchu węża.
-        clearInterval(snakeMovement);
+        clearInterval(snakeMovementInterval);
         // Przerwanie wyświetlania punktów na planszy. 
-        clearInterval(drawingPointElementInHtml);
+        clearInterval(drawingPointElementInHtmlInterval);
         // Przerwanie aktualizowania wyglądu węża na planszy. 
-        clearInterval(drawingSnakeInHtml);
+        clearInterval(drawingSnakeInHtmlInterval);
+        
+        gameIsStarted = false;
     };
 
     // Obsługa ruchu węża. 
-    const snakeMovement = setInterval( () => {
-        if (gameIsStarted && !pause) {
-            // Dostosowanie tablicy możliwych kierunków.
-            checkingTheDirection();
-            
-            // RUCH W LEWO.
-            if (direction === 'ArrowLeft') {
-                // Zmniejszenie pozycji na osi X.
-                snakePositionX -= 1;
-                // Sprawdzenie czy wąż nie uderza w krawędź.
-                checkingTheEdgeOfTheBoard(snakePositionX);
-                // Sprawdzenie czy wąż nie uderza w siebie.
-                checkingMoveSnake(snakePositionX, snakePositionY);
-                // Dodanie nowego elementu węża na początek tablicy.  
-                snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
+    let snakeMovement = () => {
+        return setInterval( () => {
+            if (gameIsStarted && !pause) {
+                // Dostosowanie tablicy możliwych kierunków.
+                checkingTheDirection();
+                
+                // RUCH W LEWO.
+                if (direction === 'ArrowLeft') {
+                    // Zmniejszenie pozycji na osi X.
+                    snakePositionX -= 1;
+                    // Sprawdzenie czy wąż nie uderza w krawędź.
+                    checkingTheEdgeOfTheBoard(snakePositionX);
+                    // Sprawdzenie czy wąż nie uderza w siebie.
+                    checkingMoveSnake(snakePositionX, snakePositionY);
+                    // Dodanie nowego elementu węża na początek tablicy.  
+                    snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
 
-            // RUCH W PRAWO.
-            } else if (direction === 'ArrowRight') {
-                // Zwiększenie pozycji na osi X.
-                snakePositionX += 1;
-                // Sprawdzenie czy wąż nie uderza w krawędź.
-                checkingTheEdgeOfTheBoard(snakePositionX);
-                // Sprawdzenie czy wąż nie uderza w siebie.
-                checkingMoveSnake(snakePositionX, snakePositionY);
-                // Dodanie nowego elementu węża na początek tablicy.    
-                snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
-            
-                // RUCH W GÓRE.
-            } else if (direction === 'ArrowUp') {
-                // Zmniejszenie pozycji na osi Y.
-                snakePositionY -= 1;
-                // Sprawdzenie czy wąż nie uderza w krawędź.
-                checkingTheEdgeOfTheBoard(snakePositionY);
-                // Sprawdzenie czy wąż nie uderza w siebie.
-                checkingMoveSnake(snakePositionX, snakePositionY);  
-                // Dodanie nowego elementu węża na początek tablicy. 
-                snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
-            
-                // RUCH W DÓŁ.    
-            } else if (direction === 'ArrowDown') {
-                // Zwiększenie pozycji na osi Y.
-                snakePositionY += 1;
-                // Sprawdzenie czy wąż nie uderza w krawędź.
-                checkingTheEdgeOfTheBoard(snakePositionY);
-                // Sprawdzenie czy wąż nie uderza w siebie.
-                checkingMoveSnake(snakePositionX, snakePositionY);
-                // Dodanie nowego elementu węża na początek tablicy.   
-                snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
+                // RUCH W PRAWO.
+                } else if (direction === 'ArrowRight') {
+                    // Zwiększenie pozycji na osi X.
+                    snakePositionX += 1;
+                    // Sprawdzenie czy wąż nie uderza w krawędź.
+                    checkingTheEdgeOfTheBoard(snakePositionX);
+                    // Sprawdzenie czy wąż nie uderza w siebie.
+                    checkingMoveSnake(snakePositionX, snakePositionY);
+                    // Dodanie nowego elementu węża na początek tablicy.    
+                    snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
+                
+                    // RUCH W GÓRE.
+                } else if (direction === 'ArrowUp') {
+                    // Zmniejszenie pozycji na osi Y.
+                    snakePositionY -= 1;
+                    // Sprawdzenie czy wąż nie uderza w krawędź.
+                    checkingTheEdgeOfTheBoard(snakePositionY);
+                    // Sprawdzenie czy wąż nie uderza w siebie.
+                    checkingMoveSnake(snakePositionX, snakePositionY);  
+                    // Dodanie nowego elementu węża na początek tablicy. 
+                    snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
+                
+                    // RUCH W DÓŁ.    
+                } else if (direction === 'ArrowDown') {
+                    // Zwiększenie pozycji na osi Y.
+                    snakePositionY += 1;
+                    // Sprawdzenie czy wąż nie uderza w krawędź.
+                    checkingTheEdgeOfTheBoard(snakePositionY);
+                    // Sprawdzenie czy wąż nie uderza w siebie.
+                    checkingMoveSnake(snakePositionX, snakePositionY);
+                    // Dodanie nowego elementu węża na początek tablicy.   
+                    snake.unshift(arrayTiles[snakePositionX][snakePositionY]);
+                };
+
+                // Aktualzacja długości węża przy zmianie pozycji.
+                updateLenghtSnake();
+                // Sprawdzanie czy punkt został zjedzony.
+                checkingPointElement();
+            };    
+        }, 300);
+    };
+
+    const drawingPointElementInHtml = () => {
+        return setInterval( () => {
+            if (!thePointInBoard && gameIsStarted && !pause) {
+                displayPointElement();
             };
+        } ,100);
+    };
 
-            // Aktualzacja długości węża przy zmianie pozycji.
-            updateLenghtSnake();
-            // Sprawdzanie czy punkt został zjedzony.
-            checkingPointElement();
-        };    
-    }, 300);
+    const drawingSnakeInHtml = () => {
+        return setInterval(() => {
+            if (gameIsStarted && !pause) {   
+                displaySnake();
+            }    
+        }, 100);
+    };
 
-    // Wyświetlanie punktów na planszy.
-    const drawingPointElementInHtml = setInterval( () => {
-        if (!thePointInBoard && gameIsStarted && !pause) {
-            displayPointElement();
-        };
-    } ,100);
+    const startGame = () => {
+        if (gameIsStarted) {
+            return;
+        }
+        gameIsStarted = true;
 
-    // Aktualizowanie wyglądu węza na planszy.
-    const drawingSnakeInHtml = setInterval( () => {
-        if (gameIsStarted && !pause) {   
-            displaySnake();
-        }    
-    }, 100);
+        snakeMovementInterval = snakeMovement();
+        drawingPointElementInHtmlInterval = drawingPointElementInHtml();
+        drawingSnakeInHtmlInterval = drawingSnakeInHtml();
+    }
 
     // Rozpoczęcie gry!
-    startEl.addEventListener('click', () => gameIsStarted =  true );
-   
+    startEl.addEventListener('click', startGame);
+
     // Zpauzowanie gry.
     pauseEl.addEventListener('click', () => {   
         // Blokada gry.
