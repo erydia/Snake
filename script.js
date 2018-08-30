@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Rozpoczęcie gry!
     startEl.addEventListener('click', () => gameIsStarted =  true );
    
-    // Zpauzowanie gry.
+    // Pauzowanie gry.
     pauseEl.addEventListener('click', () => {   
         // Blokada gry.
         if (!pause) {       
@@ -270,6 +270,5 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         return pause;
     });
-
 
 });
