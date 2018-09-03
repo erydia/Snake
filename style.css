@@ -29,7 +29,6 @@ body {
 .part-of-the-snake {
     background-color: rebeccapurple;
     border: 1px solid white;
-    z-index: 2;
 }
 
 .lose-screen {
@@ -73,4 +72,28 @@ button {
     background-color: white;
     font-size: 25px;
     font-family: 'Times New Roman', Times, serif;
+}
+
+.snake-tail {
+    background-image: url(image/snake-tail.png);
+    background-position: 50% 50%;
+    background-size: cover; 
+}
+
+.snake-torso {
+    background-image: url(image/snake-torso.png) !important;
+    background-position: 50% 50%;
+    background-size: cover; 
+}
+
+.snake-head {
+    background-image: url(image/snake-head.png);
+    background-position: 50% 50%;
+    background-size: cover; 
+}
+
+.snake-edge {
+    background-image: url(image/snake-edge.png);
+    background-position: 50% 50%;
+    background-size: cover; 
 }
