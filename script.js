@@ -405,9 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Ruch węża zgodnie z wybranym kierunkiem.
                 movements();
                 // Aktualzacja długości węża przy zmianie pozycji.
-                updateLenghtSnake();
-                console.log(snake)
-                
+                updateLenghtSnake();              
             };    
         }, 200);
     };
