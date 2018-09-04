@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let directionsMovements = ['ArrowUp', 'ArrowDown', 'ArrowRight', 'ArrowLeft'];
     // Zmienna, która zwiera aktualny kierunek ruchu.
     let direction;
-
     // Tablica zawierająca informacje dotyczące każdego kierunku (oś, współczynnki, klawisz).
     const directionArray = [{
         key: 'ArrowLeft',
@@ -49,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let elementPosition;
     // Zmienna która zwiera informacje o tym czy punkt jest już wyświetlony na planszy; domyślnie - false.
     let thePointInBoard = false;
+    // Zmienna która zawiera informacje o tym czy punkt został zjedzony.
+    let thePointIsEaten = false;
     // Zmienna zawierająca informacje o ilości punktów.
     let point = 0;
     // Wyświetlenie punktów w htmlu.
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Zmienna przechowuje informacje czy jest włączona pauza.
     let pause = false;
     let theGameIsLost = false;
-    let thePointIsEaten = false;
+    let snakeSpeed = 200;
 
     // Stworzenie dwuwymiarowej tablicy - 20x20.
     for (let i = 0; i < boardSize; i++) {
@@ -80,7 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funkcja która wyświetla węża na planszy.
     const displaySnake = () => {
         // Wyczyszczenie planszy ze zbędnych klas.
-        boardCleaning()
+        boardCleaning();
+
         // Zmienne pomocniczne trzymające elementy węża do porównywania.
         let oldElementIndex;
         let currentElementIndex;
@@ -88,9 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Porównywanie elementów węża oraz nadawanie im odpowiedniej stylistyki po spełnieniu warunków.
         for (let i = 0; i < snake.length; i++) {
-            oldElementIndex = snake[i-1]
-            currentElementIndex = snake[i]
-            newElemenetIndex = snake[i+1]
+            oldElementIndex = snake[i-1];
+            currentElementIndex = snake[i];
+            newElemenetIndex = snake[i+1];
             if (oldElementIndex === undefined && currentElementIndex.x < newElemenetIndex.x) {
                 currentElementIndex.div.classList.add('snake-head');
                 currentElementIndex.div.classList.add('direction-left');
@@ -178,14 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
             el.classList.remove('point-element');
         }); 
         elementPosition = '';
-    }
+    };
 
     // Tablica która przechowuje kafelki na których wąż się znajduje.
     let snake = [];
     // Ustanona długość węża.
     const initialSnakeLength = 6;
     
-
     // Funkcja która ustawia pozycje węża.
     const setSnakePosition = () => {
         // Wyzerowanie tablicy.
@@ -241,15 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
         thePointInBoard = true;
         thePointIsEaten = false;
         // Zmienna która trzyma odpowiednie wyrażenie do losowania pozycji.
-        //const randomPosition = Math.floor(Math.random() * (boardSize - 1));
-        // Losowanie pozycji na osi x punktu.
+        // Losowanie pozycji dla punktu na osi x jak i y.
         let elementPositionX = Math.floor(Math.random() * (boardSize - 1));
-        // Losowanie pozycji na osi y punktu.
         let elementPositionY = Math.floor(Math.random() * (boardSize - 1));
         // Przypisanie do zmiennej kafelka z wylosowaną pozycją.
-        elementPosition = {x: elementPositionX, y: elementPositionY, div: arrayTiles[elementPositionX][elementPositionY]}
+        elementPosition = arrayTiles[elementPositionX][elementPositionY];
         // Sprawdzenie czy punkt nie znajduję się na kafelku zajmowanym przez węża.
-        let thePosition = snake.find((el) => {el.div === elementPosition.div});
+        let thePosition = snake.find((el) => el.div === elementPosition);
         // Jeśli punkt ma tą samą pozycje co element węża - nie wyświetlaj go.
         if (thePosition !== undefined) {
             // Punkt nie ma wyznaczonej pozycji.
@@ -259,42 +258,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Jeśli punkt ma inną pozycje niż wąż - wyświetl go.    
         } else {  
             // Nadanie klasy sytlizującej punkt.   
-            elementPosition.div.classList.add('point-element');
+            elementPosition.classList.add('point-element');
         };
     };
-
-    const directionSnakeHead = new Map();
-    // Ustawiamy przeciwny kierunek dla każdej z wartości w mapie.
-    directionSnakeHead.set('ArrowUp', 'direction-up');
-    directionSnakeHead.set('ArrowDown', 'direction-down');
-    directionSnakeHead.set('ArrowLeft', 'direction-right');
-    directionSnakeHead.set('ArrowRight', 'direction-left');
-
-    //let rotate = [ 'direction-up', 'direction-down', 'direction-right', 'direction-left']
 
     // Funkcja która sprawdza czy punkt został zjedzony przez węża.
     const checkingPointElement = () => {
         // Sprawdzenie czy wąż znajduję się na tej samej pozycji co punkt.
-        let thisPoint = snake.find((el) => el.div === elementPosition.div);
+        let thisPoint = snake.find((el) => el.div === elementPosition);
         // Jeśli tak - gracz dostaje punkt, wąż powiększa się a element zostaje usunięty z planszy.
         if (thisPoint !== undefined) {
             // Usunięcie klasy stylizujacej punkt.
-            elementPosition.div.classList.remove('point-element');
+            elementPosition.classList.remove('point-element');
+            // Punkt został zjedzony - zmiana zmiennej na true.
             thePointIsEaten = true;
-            //rotate.find(el => el === isClass)
-            
-            //snake.push(elementPosition)
-            /*let isClass = snake[0].div.classList
-            for (var i = 0; i < isClass.length; i++) {
-                if (rotate[i] === isClass[i]) {
-                    //console.log(snake)
-                    snake[0].div.classList.remove(isClass[i]) 
-                    console.log(isClass) 
-                    let thisDirection = directionSnakeHead.get(direction)
-                    snake[0].div.classList.add(thisDirection)                  
-                } 
-            };  */
-            
             // Pozozycja punktu resetuje się.
             elementPosition = '';
             // Dodanie punktu do puli.
@@ -303,9 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
             pointEl.innerText = `Punkty: ${point}`;
             // Punkt nie jest już wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
-            if ( !theGameIsLost ) {
-                displaySnake()
-            } 
+            if (!theGameIsLost) {
+                displaySnake();
+            }; 
         };    
     };
 
@@ -357,9 +334,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Dodanie nowego elementu węża na początek tablicy.
         const object = {x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] }     
         snake.unshift(object);
-        if ( !theGameIsLost ) {
-            displaySnake()
-        }
+        // Odświeżenie węża jeśli gra nie została przegrana.
+        if (!theGameIsLost) {
+            displaySnake();
+        };
     }; 
 
     // Funkcja, która aktualizuje długość węża przy ruchu.
@@ -370,10 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const lastElementIndex = lenghtSnake - 1;
             // Usunięcie ostatniego elementu z tablicy.
             snake.splice(lastElementIndex, 1);
-            if ( !theGameIsLost ) {
-                displaySnake()
-            }
-        }    
+            // Odświeżenie węża jeśli gra nie została przegrana.
+            if (!theGameIsLost) {
+                displaySnake();
+            };
+        };   
     };
 
     // Akrualizacja pozycji węża.
@@ -416,14 +395,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!thePointInBoard && gameIsStarted && !pause) {
                 displayPointElement();
             };
-        } ,100);
+        }, 100);
     };
 
     // Wyświetlanie węża na planszy.
     const drawingSnakeInHtml = () => {
         return setInterval(() => {
             if (gameIsStarted && !pause) {   
-                boardCleaning()
                 displaySnake();
             }    
         }, 200);
@@ -438,8 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Gra jest w trakcie, zmiana wartości zmiennej.
         gameIsStarted = true;
         theGameIsLost = false;
-        // Aktualizacja kierunku.
-        direction = 'ArrowLeft';
         //Reset punktów i wyświetlenie ich w htmlu.
         point = 0;
         pointEl.innerText = `Punkty: ${point}`;
@@ -449,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pointCleaning();
         // Ustawienie pozycji węża.
         setSnakePosition();
-
+        
         // Odpalenie intervali - ruch węża i aktualizacja go, wyświetlanie punktów.
         snakeMovementInterval = snakeMovement();
         drawingPointElementInHtmlInterval = drawingPointElementInHtml();
