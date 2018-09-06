@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Zmienne przechowujące pozycje X jak i Y.
     const boardSize = 20;
-
     // Pusta tablica na kafelki jakie będą na planszy.
     const arrayTiles = [];
 
@@ -58,19 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameIsStarted = false;
     // Zmienna przechowuje informacje czy jest włączona pauza.
     let pause = false;
+    // Zmienna która przechowuje informacje o tym czy gra jest przegrana.
     let theGameIsLost = false;
-    let snakeSpeed = 200;
+    // Zmienna która przechowuje informacje o szybkości węża.
+    let snakeSpeed;
 
     // Stworzenie dwuwymiarowej tablicy - 20x20.
     for (let i = 0; i < boardSize; i++) {
         arrayTiles[i] = [];
     };
+    
     for (let y = 0; y < boardSize; ++y) {
         for (let x = 0; x < boardSize; ++x ) {
             // Stworzenie dynamicznie diva który będzie kafelkiem, wystylizowanie go.
             let tile = document.createElement('div');
             tile.classList.add('tile-board');
-            //tile.innerText = `x: ${x}, y: ${y}`
             // Dodanie kafelka do htmla. 
             boardEl.appendChild(tile);
             // Wypełnienie tablicy stworzonymi divami.
@@ -80,63 +81,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Funkcja która wyświetla węża na planszy.
     const displaySnake = () => {
-        // Wyczyszczenie planszy ze zbędnych klas.
-        boardCleaning();
+        if (!theGameIsLost) {
+            // Wyczyszczenie planszy ze zbędnych klas.
+            boardCleaning();
 
-        // Zmienne pomocniczne trzymające elementy węża do porównywania.
-        let oldElementIndex;
-        let currentElementIndex;
-        let newElemenetIndex
-        
-        // Porównywanie elementów węża oraz nadawanie im odpowiedniej stylistyki po spełnieniu warunków.
-        for (let i = 0; i < snake.length; i++) {
-            oldElementIndex = snake[i-1];
-            currentElementIndex = snake[i];
-            newElemenetIndex = snake[i+1];
-            if (oldElementIndex === undefined && currentElementIndex.x < newElemenetIndex.x) {
-                currentElementIndex.div.classList.add('snake-head');
-                currentElementIndex.div.classList.add('direction-left');
-            } else if (oldElementIndex === undefined && currentElementIndex.x > newElemenetIndex.x) {
-                currentElementIndex.div.classList.add('snake-head');
-                currentElementIndex.div.classList.add('direction-right');
-            } else if (oldElementIndex === undefined && currentElementIndex.y < newElemenetIndex.y) {
-                currentElementIndex.div.classList.add('snake-head');
-                currentElementIndex.div.classList.add('direction-up');
-            } else if (oldElementIndex === undefined && currentElementIndex.y > newElemenetIndex.y) {
-                currentElementIndex.div.classList.add('snake-head');
-                currentElementIndex.div.classList.add('direction-down');
-            } else if (oldElementIndex.x < currentElementIndex.x && newElemenetIndex === undefined) {
-                currentElementIndex.div.classList.add('snake-tail');
-                currentElementIndex.div.classList.add('direction-left');
-            } else if (oldElementIndex.x > currentElementIndex.x && newElemenetIndex === undefined) {
-                currentElementIndex.div.classList.add('snake-tail');
-                currentElementIndex.div.classList.add('direction-right');
-            } else if (oldElementIndex.y < currentElementIndex.y && newElemenetIndex === undefined) {
-                currentElementIndex.div.classList.add('snake-tail');
-                currentElementIndex.div.classList.add('direction-up');
-            } else if (oldElementIndex.y > currentElementIndex.y && newElemenetIndex === undefined) {
-                currentElementIndex.div.classList.add('snake-tail');
-                currentElementIndex.div.classList.add('direction-down');
-            } else if (oldElementIndex.y < currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x || oldElementIndex.x > currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y) {
-                currentElementIndex.div.classList.add('snake-edge');
-                currentElementIndex.div.classList.add('direction-up');
-            } else if (oldElementIndex.y > currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x || oldElementIndex.x < currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y) {
-                currentElementIndex.div.classList.add('snake-edge');
-                currentElementIndex.div.classList.add('direction-down');
-            } else if (oldElementIndex.x > currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y || oldElementIndex.y > currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x) {
-                currentElementIndex.div.classList.add('snake-edge');
-                currentElementIndex.div.classList.add('direction-right');
-            } else if (oldElementIndex.x < currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y || oldElementIndex.y < currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x) {
-                currentElementIndex.div.classList.add('snake-edge');
-                currentElementIndex.div.classList.add('direction-left');
-            } else if (oldElementIndex.x === currentElementIndex.x && currentElementIndex.x === newElemenetIndex.x && newElemenetIndex.x === oldElementIndex.x){
-                currentElementIndex.div.classList.add('snake-torso');
-                currentElementIndex.div.classList.add('direction-up');
-            } else if (oldElementIndex.y === currentElementIndex.y && currentElementIndex.y === newElemenetIndex.y && newElemenetIndex.y === oldElementIndex.y) {
-                currentElementIndex.div.classList.add('snake-torso');
-                currentElementIndex.div.classList.add('direction-left');
-            };   
-        };
+            // Zmienne pomocniczne trzymające elementy węża do porównywania.
+            let oldElementIndex;
+            let currentElementIndex;
+            let newElemenetIndex;
+            
+            // Porównywanie elementów węża oraz nadawanie im odpowiedniej stylistyki po spełnieniu warunków.
+            for (let i = 0; i < snake.length; i++) {
+                oldElementIndex = snake[i-1];
+                currentElementIndex = snake[i];
+                newElemenetIndex = snake[i+1];
+                if (oldElementIndex === undefined && currentElementIndex.x < newElemenetIndex.x) {
+                    currentElementIndex.div.classList.add('snake-head');
+                    currentElementIndex.div.classList.add('direction-left');
+                } else if (oldElementIndex === undefined && currentElementIndex.x > newElemenetIndex.x) {
+                    currentElementIndex.div.classList.add('snake-head');
+                    currentElementIndex.div.classList.add('direction-right');
+                } else if (oldElementIndex === undefined && currentElementIndex.y < newElemenetIndex.y) {
+                    currentElementIndex.div.classList.add('snake-head');
+                    currentElementIndex.div.classList.add('direction-up');
+                } else if (oldElementIndex === undefined && currentElementIndex.y > newElemenetIndex.y) {
+                    currentElementIndex.div.classList.add('snake-head');
+                    currentElementIndex.div.classList.add('direction-down');
+                } else if (oldElementIndex.x < currentElementIndex.x && newElemenetIndex === undefined) {
+                    currentElementIndex.div.classList.add('snake-tail');
+                    currentElementIndex.div.classList.add('direction-left');
+                } else if (oldElementIndex.x > currentElementIndex.x && newElemenetIndex === undefined) {
+                    currentElementIndex.div.classList.add('snake-tail');
+                    currentElementIndex.div.classList.add('direction-right');
+                } else if (oldElementIndex.y < currentElementIndex.y && newElemenetIndex === undefined) {
+                    currentElementIndex.div.classList.add('snake-tail');
+                    currentElementIndex.div.classList.add('direction-up');
+                } else if (oldElementIndex.y > currentElementIndex.y && newElemenetIndex === undefined) {
+                    currentElementIndex.div.classList.add('snake-tail');
+                    currentElementIndex.div.classList.add('direction-down');
+                } else if (oldElementIndex.y < currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x || oldElementIndex.x > currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y) {
+                    currentElementIndex.div.classList.add('snake-edge');
+                    currentElementIndex.div.classList.add('direction-up');
+                } else if (oldElementIndex.y > currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x || oldElementIndex.x < currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y) {
+                    currentElementIndex.div.classList.add('snake-edge');
+                    currentElementIndex.div.classList.add('direction-down');
+                } else if (oldElementIndex.x > currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y || oldElementIndex.y > currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x) {
+                    currentElementIndex.div.classList.add('snake-edge');
+                    currentElementIndex.div.classList.add('direction-right');
+                } else if (oldElementIndex.x < currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y || oldElementIndex.y < currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x) {
+                    currentElementIndex.div.classList.add('snake-edge');
+                    currentElementIndex.div.classList.add('direction-left');
+                } else if (oldElementIndex.x === currentElementIndex.x && currentElementIndex.x === newElemenetIndex.x && newElemenetIndex.x === oldElementIndex.x){
+                    currentElementIndex.div.classList.add('snake-torso');
+                    currentElementIndex.div.classList.add('direction-up');
+                } else if (oldElementIndex.y === currentElementIndex.y && currentElementIndex.y === newElemenetIndex.y && newElemenetIndex.y === oldElementIndex.y) {
+                    currentElementIndex.div.classList.add('snake-torso');
+                    currentElementIndex.div.classList.add('direction-left');
+                };   
+            };
+        };    
     };
 
     // Funkcja która usuwa wszystkie zbędne klasy z kafelków.
@@ -153,6 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     };
+
+    // Nasłuchiwanie na zmiane kierunku. 
+    document.addEventListener('keyup', (event) => {
+        // Przypisanie do zmiennej kierunku jeśli jest zgodny z tablicą możliwych kierunków.
+        if (event.key === directionsMovements.find((el) => el === event.key)) {
+            direction = event.key;
+        };
+    });
 
     const directionBlockMap = new Map();
     // Ustawiamy przeciwny kierunek dla każdej z wartości w mapie.
@@ -228,14 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }; 
     }; 
 
-    // Nasłuchiwanie na zmiane kierunku. 
-    document.addEventListener('keyup', (event) => {
-        // Przypisanie do zmiennej kierunku jeśli jest zgodny z tablicą możliwych kierunków.
-        if (event.key === directionsMovements.find((el) => el === event.key)) {
-            direction = event.key;
-        };
-    });
-
     // Funkcja która losuje pozycje punktu i wyświetla go na planszy.
     const displayPointElement = () => {
         // Punkt został wyświetlony - zmianna zmiennej na true.
@@ -280,16 +283,35 @@ document.addEventListener('DOMContentLoaded', () => {
             pointEl.innerText = `Punkty: ${point}`;
             // Punkt nie jest już wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
-            if (!theGameIsLost) {
-                displaySnake();
-            }; 
+            // Odświeżenie węża jeśli gra nie została przegrana.
+            displaySnake();
         };    
+    };
+
+    // Funkcja która aktualizuje szybkość węża.
+    const updateSnakeSpeed = () => {
+        // Zwiększenie szybkości jeśli punkt został zjedzony.    
+        if (thePointIsEaten) {
+            if (snakeSpeed > 100) {
+                snakeSpeed -= 2;
+            } else if (snakeSpeed <= 100) {
+                snakeSpeed -= 1;
+            };
+            // Wyczyszczenie intervali.
+            clearInterval(snakeMovementInterval);
+            clearInterval(drawingSnakeInHtmlInterval);
+            // Zaktualizowanie wyglądu węża.
+            displaySnake();
+            // Wywołanie ponownie interwali już z nową szybkością.
+            snakeMovementInterval = snakeMovement();
+            drawingSnakeInHtmlInterval = drawingSnakeInHtml();
+        };
     };
 
     // Funkcja która sprawdza czy wąż nie uderzył w krawędź planszy.
     const checkingTheEdgeOfTheBoard = (position) => {
         // Jeśli pozycja węża wyjdzie poza plansze gra zostaje przerwana.
-        if (position < 0 || position > (boardSize-1)) {
+        if (position < 0 || position > (boardSize - 1)) {
             loseGame();
         };
     };
@@ -323,35 +345,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ruch węża.
     const movements = () => {
         // Wybranie obiektu z tablicy kierunków zgodnego z wybranym kierunkiem przez gracza.
-        let theDirection = directionArray.find((el) => el.key === direction)
+        let theDirection = directionArray.find((el) => el.key === direction);
         // Aktualizacja pozycji węża.
-        updatePosition(theDirection.axis, theDirection.factor)
+        updatePosition(theDirection.axis, theDirection.factor);
         // Sprawdzenie czy wąż nie uderza w krawędź.
         checkingTheEdgeOfTheBoard(snakePositionX);
         checkingTheEdgeOfTheBoard(snakePositionY);
         // Sprawdzenie czy wąż nie uderza w siebie.
         checkingMoveSnake(snakePositionX, snakePositionY);
         // Dodanie nowego elementu węża na początek tablicy.
-        const object = {x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] }     
+        const object = { x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] };     
         snake.unshift(object);
         // Odświeżenie węża jeśli gra nie została przegrana.
-        if (!theGameIsLost) {
-            displaySnake();
-        };
+        displaySnake();
     }; 
 
     // Funkcja, która aktualizuje długość węża przy ruchu.
     const updateLenghtSnake = () => {
-        if (!thePointIsEaten){   
+        // Odświeżenie węża jeśli gra nie została przegrana.
+        displaySnake();
+        if (!thePointIsEaten) {   
             // Usunięcie klasy stylizującej węża z ostatniego elementu tablicy.
             let lenghtSnake = snake.length;
             const lastElementIndex = lenghtSnake - 1;
             // Usunięcie ostatniego elementu z tablicy.
             snake.splice(lastElementIndex, 1);
             // Odświeżenie węża jeśli gra nie została przegrana.
-            if (!theGameIsLost) {
-                displaySnake();
-            };
+            displaySnake();
         };   
     };
 
@@ -364,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (factor === 'plus') {
                 snakePositionX += 1;
             };    
-        } if (axis === 'y'){
+        } if (axis === 'y') {
             if (factor === 'minus') {
                 snakePositionY -= 1;
             } else if (factor === 'plus') {
@@ -381,12 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkingTheDirection();
                 // Sprawdzanie czy punkt został zjedzony.
                 checkingPointElement();
+                updateSnakeSpeed();
                 // Ruch węża zgodnie z wybranym kierunkiem.
                 movements();
                 // Aktualzacja długości węża przy zmianie pozycji.
-                updateLenghtSnake();              
+                updateLenghtSnake();             
             };    
-        }, 200);
+        }, snakeSpeed);
     };
 
     // Wyświetlanie punktów na planszy.
@@ -403,8 +424,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return setInterval(() => {
             if (gameIsStarted && !pause) {   
                 displaySnake();
-            }    
-        }, 200);
+            };    
+        }, snakeSpeed);
     };
 
     // Rozpoczęcie gry!
@@ -412,14 +433,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Zwróć funckje jeśli gra jest w trakcie.     
         if (gameIsStarted) {
             return;
-        }
-        // Gra jest w trakcie, zmiana wartości zmiennej.
+        };
+        // Ustawienie początkowych wartości zmiennych.
         gameIsStarted = true;
         theGameIsLost = false;
-        //Reset punktów i wyświetlenie ich w htmlu.
         point = 0;
         pointEl.innerText = `Punkty: ${point}`;
-        thePointInBoard = false    
+        thePointInBoard = false;    
+        snakeSpeed = 200;
 
         // Wyczyszczenie planszy z wyświetlonego punktu.
         pointCleaning();
