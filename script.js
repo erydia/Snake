@@ -62,6 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Zmienna która przechowuje informacje o szybkości węża.
     let snakeSpeed;
 
+    // Tablica zawierająca obrazki stylizujące krzak.
+    const bushImage = ['bush-1', 'bush-2', 'bush-3', 'bush-4']
+    // Tablica zawierająca wszystkie współrzędne krzaków.
+    let bushArray = [];
+    // Tablica zawierająca jedynie współrzędne jednego krzaka.
+    let thisBush = [];
+
     // Stworzenie dwuwymiarowej tablicy - 20x20.
     for (let i = 0; i < boardSize; i++) {
         arrayTiles[i] = [];
@@ -72,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stworzenie dynamicznie diva który będzie kafelkiem, wystylizowanie go.
             let tile = document.createElement('div');
             tile.classList.add('tile-board');
+            //tile.innerText = `x: ${x}, y: ${y}`
             // Dodanie kafelka do htmla. 
             boardEl.appendChild(tile);
             // Wypełnienie tablicy stworzonymi divami.
@@ -95,70 +103,117 @@ document.addEventListener('DOMContentLoaded', () => {
                 oldElementIndex = snake[i-1];
                 currentElementIndex = snake[i];
                 newElemenetIndex = snake[i+1];
-                if (oldElementIndex === undefined && currentElementIndex.x < newElemenetIndex.x) {
-                    currentElementIndex.div.classList.add('snake-head');
-                    currentElementIndex.div.classList.add('direction-left');
-                } else if (oldElementIndex === undefined && currentElementIndex.x > newElemenetIndex.x) {
-                    currentElementIndex.div.classList.add('snake-head');
-                    currentElementIndex.div.classList.add('direction-right');
-                } else if (oldElementIndex === undefined && currentElementIndex.y < newElemenetIndex.y) {
-                    currentElementIndex.div.classList.add('snake-head');
-                    currentElementIndex.div.classList.add('direction-up');
-                } else if (oldElementIndex === undefined && currentElementIndex.y > newElemenetIndex.y) {
-                    currentElementIndex.div.classList.add('snake-head');
-                    currentElementIndex.div.classList.add('direction-down');
-                } else if (oldElementIndex.x < currentElementIndex.x && newElemenetIndex === undefined) {
-                    currentElementIndex.div.classList.add('snake-tail');
-                    currentElementIndex.div.classList.add('direction-left');
-                } else if (oldElementIndex.x > currentElementIndex.x && newElemenetIndex === undefined) {
-                    currentElementIndex.div.classList.add('snake-tail');
-                    currentElementIndex.div.classList.add('direction-right');
-                } else if (oldElementIndex.y < currentElementIndex.y && newElemenetIndex === undefined) {
-                    currentElementIndex.div.classList.add('snake-tail');
-                    currentElementIndex.div.classList.add('direction-up');
-                } else if (oldElementIndex.y > currentElementIndex.y && newElemenetIndex === undefined) {
-                    currentElementIndex.div.classList.add('snake-tail');
-                    currentElementIndex.div.classList.add('direction-down');
-                } else if (oldElementIndex.y < currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x || oldElementIndex.x > currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y) {
-                    currentElementIndex.div.classList.add('snake-edge');
-                    currentElementIndex.div.classList.add('direction-up');
-                } else if (oldElementIndex.y > currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x || oldElementIndex.x < currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y) {
-                    currentElementIndex.div.classList.add('snake-edge');
-                    currentElementIndex.div.classList.add('direction-down');
-                } else if (oldElementIndex.x > currentElementIndex.x && currentElementIndex.y < newElemenetIndex.y || oldElementIndex.y > currentElementIndex.y && currentElementIndex.x < newElemenetIndex.x) {
-                    currentElementIndex.div.classList.add('snake-edge');
-                    currentElementIndex.div.classList.add('direction-right');
-                } else if (oldElementIndex.x < currentElementIndex.x && currentElementIndex.y > newElemenetIndex.y || oldElementIndex.y < currentElementIndex.y && currentElementIndex.x > newElemenetIndex.x) {
-                    currentElementIndex.div.classList.add('snake-edge');
-                    currentElementIndex.div.classList.add('direction-left');
-                } else if (oldElementIndex.x === currentElementIndex.x && currentElementIndex.x === newElemenetIndex.x && newElemenetIndex.x === oldElementIndex.x){
-                    currentElementIndex.div.classList.add('snake-torso');
-                    currentElementIndex.div.classList.add('direction-up');
-                } else if (oldElementIndex.y === currentElementIndex.y && currentElementIndex.y === newElemenetIndex.y && newElemenetIndex.y === oldElementIndex.y) {
-                    currentElementIndex.div.classList.add('snake-torso');
-                    currentElementIndex.div.classList.add('direction-left');
-                };   
+                // Stylizacja węża.
+                determineSnakePartDirection(oldElementIndex, currentElementIndex, newElemenetIndex);
             };
         };    
+    };
+
+    // Funcja która stylizuję dwa fragmenty węża. 
+    const setSnakePartImage = (obj1, obj2, elementToUpdate, additionalClasses) => {
+        const isPointingLeft = obj1.x < obj2.x;
+        const isPointinRight = obj1.x > obj2.x;
+        const isPointingDown = obj1.y < obj2.y;
+        const isPointingUp = obj1.y > obj2.y
+
+        // Aplikuje wszystkie wymagane, podane klasy
+        additionalClasses.forEach(c => elementToUpdate.div.classList.add(c));
+        
+        // Zmienna pomocnicza, aby móc skorzystać ze switcha
+        const snakePartDirection = isPointingLeft || isPointinRight || isPointingDown || isPointingUp;
+
+        switch (snakePartDirection) {
+            case isPointingLeft: {
+                elementToUpdate.div.classList.add('direction-left');
+                break;
+            };
+            case isPointinRight: {
+                elementToUpdate.div.classList.add('direction-right');
+                break;
+            };
+            case isPointingDown: {
+                elementToUpdate.div.classList.add('direction-up');
+                break;
+            };
+            case isPointingUp: {
+                elementToUpdate.div.classList.add('direction-down');
+                break;
+            };
+            default: {
+                throw new Error('something went completely wrong');
+            };
+        };
+    };
+
+    // Funkcja która stylizuje węża. 
+    const determineSnakePartDirection = (oldElementIndex, currentElementIndex, newElemenetIndex) => {
+        const isOldDefined = oldElementIndex !== undefined;
+        const isNewDefined = newElemenetIndex !== undefined;
+
+        if (!isOldDefined) {
+            // Stylizacja główki węża.
+            setSnakePartImage(currentElementIndex, newElemenetIndex, currentElementIndex, ['snake-head']);
+        } else if (!isNewDefined) {
+            // Stylizacja ogonka węża.
+            setSnakePartImage(oldElementIndex, currentElementIndex, currentElementIndex, ['snake-tail']);
+        } else if (isOldDefined) {
+            // Stylizacja krawędzi węża.
+            const isPointingUpDirectionUp = oldElementIndex.y < currentElementIndex.y;
+            const isPointingUpDirectionDown = oldElementIndex.y > currentElementIndex.y;
+            const isPointingLeftDirectionRight = currentElementIndex.x < newElemenetIndex.x;
+            const isPointingLeftDirectionLeft = currentElementIndex.x > newElemenetIndex.x;
+            const isPointingRightDirectionRight = oldElementIndex.x < currentElementIndex.x;
+            const isPointingRightDirectionLeft = oldElementIndex.x > currentElementIndex.x;         
+            const isPointingDownDirectionUp = currentElementIndex.y < newElemenetIndex.y;
+            const isPointingDownDirectionDown = currentElementIndex.y > newElemenetIndex.y;
+
+            if (isPointingUpDirectionUp && isPointingLeftDirectionRight || isPointingRightDirectionLeft && isPointingDownDirectionDown) {
+                 currentElementIndex.div.classList.add('snake-edge');
+                 currentElementIndex.div.classList.add('direction-up');
+             } else if (isPointingUpDirectionDown && isPointingLeftDirectionLeft || isPointingRightDirectionRight && isPointingDownDirectionUp) {
+                currentElementIndex.div.classList.add('snake-edge');
+                 currentElementIndex.div.classList.add('direction-down');
+             } else if (isPointingRightDirectionLeft && isPointingDownDirectionUp || isPointingUpDirectionDown && isPointingLeftDirectionRight) {
+                 currentElementIndex.div.classList.add('snake-edge');
+                 currentElementIndex.div.classList.add('direction-right');
+             } else if (isPointingRightDirectionRight && isPointingDownDirectionDown || isPointingUpDirectionUp && isPointingLeftDirectionLeft) {
+                 currentElementIndex.div.classList.add('snake-edge');
+                 currentElementIndex.div.classList.add('direction-left');
+             }; 
+             
+             // Stylizacja zwykłego elementu weża.
+             if (oldElementIndex.x === currentElementIndex.x && currentElementIndex.x === newElemenetIndex.x && newElemenetIndex.x === oldElementIndex.x){
+                currentElementIndex.div.classList.add('snake-torso');
+                currentElementIndex.div.classList.add('direction-up');
+             } else if (oldElementIndex.y === currentElementIndex.y && currentElementIndex.y === newElemenetIndex.y && newElemenetIndex.y === oldElementIndex.y) {
+                currentElementIndex.div.classList.add('snake-torso');
+                currentElementIndex.div.classList.add('direction-left');
+            };
+        };        
     };
 
     // Funkcja która usuwa wszystkie zbędne klasy z kafelków.
     const boardCleaning = () => {
         const tileBoardEl = document.querySelectorAll('.tile-board')
         tileBoardEl.forEach((el) => {
-            // Przypisanie do zmiennej klas zawartych na danym kafelku
+            // Przypisanie do zmiennej klas zawartych na danym kafelku.
             let allClass = el.classList;
             // Usunięcie wszystkich zbędnych klas poza podstawową oraz klasą zawierającą punkt.
             for (let i = 1; i < allClass.length; i++) {
-                if ( el.classList.item(i) !== 'point-element') {
+                if ( el.classList.item(i) !== 'point-element' && el.classList.item(i) !== 'bush-1' && el.classList.item(i) !== 'bush-2' && el.classList.item(i) !== 'bush-3' && el.classList.item(i) !== 'bush-4') {
                     el.classList.remove(el.classList.item(i));
-                };
+                };        
             };
         });
     };
 
     // Nasłuchiwanie na zmiane kierunku. 
     document.addEventListener('keyup', (event) => {
+        if (event.key === 's') {
+            startGame();
+        } else if (event.key === 'p'){
+            pauseGame();
+        }
         // Przypisanie do zmiennej kierunku jeśli jest zgodny z tablicą możliwych kierunków.
         if (event.key === directionsMovements.find((el) => el === event.key)) {
             direction = event.key;
@@ -251,14 +306,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // Przypisanie do zmiennej kafelka z wylosowaną pozycją.
         elementPosition = arrayTiles[elementPositionX][elementPositionY];
         // Sprawdzenie czy punkt nie znajduję się na kafelku zajmowanym przez węża.
-        let thePosition = snake.find((el) => el.div === elementPosition);
+        let thePositionSnake = snake.find((el) => el.div === elementPosition);
+        // Sprawdzenie czy punkt nie znajduję się na kafelku zawierającym krzak.
+        let thePositionBush = bushArray.find((el) => el === elementPosition);
         // Jeśli punkt ma tą samą pozycje co element węża - nie wyświetlaj go.
-        if (thePosition !== undefined) {
+        if (thePositionSnake !== undefined) {
             // Punkt nie ma wyznaczonej pozycji.
             elementPosition = '';
             // Punkt nie jest wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
-        // Jeśli punkt ma inną pozycje niż wąż - wyświetl go.    
+        // Jeśli punkt ma taką samą pozycje co element krzaka - nie wyświetlaj go.    
+        } else if (thePositionBush !== undefined){
+            // Punkt nie ma wyznaczonej pozycji.
+            elementPosition = '';
+            // Punkt nie jest wyświetlony - zmiana zmiennej na false.
+            thePointInBoard = false;
         } else {  
             // Nadanie klasy sytlizującej punkt.   
             elementPosition.classList.add('point-element');
@@ -283,9 +345,87 @@ document.addEventListener('DOMContentLoaded', () => {
             pointEl.innerText = `Punkty: ${point}`;
             // Punkt nie jest już wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
-            // Odświeżenie węża jeśli gra nie została przegrana.
             displaySnake();
         };    
+    };
+
+    // Funkcja która wyznacza pozycje krzaka.
+    const positionBush = () => {
+        // Zmienna która zawiera odległość od krawedź planszy.
+        const lengthBush = 4;
+        // Maksymalna i minimalna pozycja w jakiej krzak może się pojawić.
+        const maxPosition = boardSize - lengthBush;
+        const minPosition = lengthBush; 
+        // Wylosowanie pozycji krzaka.  
+        let bushPositionX = Math.floor(Math.random() * (maxPosition - minPosition + 1) + minPosition);
+        let bushPositionY = Math.floor(Math.random() * (maxPosition - minPosition + 1) + minPosition);
+        // Bazując na wylosowanej pozycji - określenie pozycji innych przyległych kafelków krzaka i dodanie ich do tablicy.
+        thisBush.push(arrayTiles[bushPositionX][bushPositionY]);
+        thisBush.push(arrayTiles[bushPositionX+1][bushPositionY]);
+        thisBush.push(arrayTiles[bushPositionX][bushPositionY+1]);
+        thisBush.push(arrayTiles[bushPositionX+1][bushPositionY+1]);
+    }
+
+    // Funkcja która stylizuje cały krzak.
+    const getBushStyle = () => {
+        for (let i = 0; i < thisBush.length; i++) {          
+            thisBush[i].classList.add(bushImage[i]);
+        };   
+    };
+
+    // Funkcja która wyświetla krzak w htmlu.  
+    const displayBush = () => {    
+        // Wylosowanie pozycji krzaka
+        positionBush();
+        // Sprawdzenie czy wylosowany krzak nie znajduje się na wężu.
+        snake.forEach((el) => {
+            let thePosition = thisBush.find(thisEl => thisEl === el.div);
+            // Jeśli się znajduje - usunięcie wygenerowanego krzaka.
+            if(thePosition !== undefined) {
+                thisBush = [];
+            }   
+        })
+        // Jeśli nie ma żadnego krzaka w tablicy dodaj go.
+        if (bushArray.length === 0) {
+            thisBush.forEach(el => bushArray.push(el));
+            getBushStyle();
+            thisBush = [];
+        } else {
+            // Sprawdzednie czy pozycja wylosowanego krzaka nie znajduję się na krzaku już istniejącym.
+            bushArray.forEach((el) => {
+                let thePosition = thisBush.find(thisEl => thisEl === el);
+                // Jeśli się znajduję - usunięcie wygenerowanego krzaka.
+                if(thePosition !== undefined) {
+                    thisBush = [];
+                };  
+            });
+            // Dodanie krzaka do tablicy.
+            thisBush.forEach(el => bushArray.push(el));
+            // Wystylizowanie go.
+            getBushStyle();
+            thisBush = [];
+        };   
+    };
+
+    // Funkcja która czyści wyświetlone krzaki na planszy.
+    const clearBush = () => {
+        bushArray.forEach((el) => {
+            // Przypisanie do zmiennej klas.
+            let allClass = el.classList;
+            // Usunięcie wszystkich zbędnych klas.
+            for (let i = 1; i < allClass.length; i++) {
+                el.classList.remove(el.classList.item(i));     
+            };
+        });
+    };    
+
+    // Funkcja która sprawdza czy wąż uderzył w krzak. 
+    const checkingTheBush = (x, y) => {
+        let thisHit = bushArray.find((el) => el === arrayTiles[x][y]);
+        // Jeśli uderzył - gra zostaje przegrana.
+        if (thisHit !== undefined) {
+            loseGame();
+        };
     };
 
     // Funkcja która aktualizuje szybkość węża.
@@ -353,16 +493,14 @@ document.addEventListener('DOMContentLoaded', () => {
         checkingTheEdgeOfTheBoard(snakePositionY);
         // Sprawdzenie czy wąż nie uderza w siebie.
         checkingMoveSnake(snakePositionX, snakePositionY);
+        checkingTheBush(snakePositionX, snakePositionY)
         // Dodanie nowego elementu węża na początek tablicy.
         const object = { x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] };     
         snake.unshift(object);
-        // Odświeżenie węża jeśli gra nie została przegrana.
-        displaySnake();
     }; 
 
     // Funkcja, która aktualizuje długość węża przy ruchu.
     const updateLenghtSnake = () => {
-        // Odświeżenie węża jeśli gra nie została przegrana.
         displaySnake();
         if (!thePointIsEaten) {   
             // Usunięcie klasy stylizującej węża z ostatniego elementu tablicy.
@@ -370,9 +508,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const lastElementIndex = lenghtSnake - 1;
             // Usunięcie ostatniego elementu z tablicy.
             snake.splice(lastElementIndex, 1);
-            // Odświeżenie węża jeśli gra nie została przegrana.
-            displaySnake();
         };   
+        displaySnake();
     };
 
     // Akrualizacja pozycji węża.
@@ -441,11 +578,19 @@ document.addEventListener('DOMContentLoaded', () => {
         pointEl.innerText = `Punkty: ${point}`;
         thePointInBoard = false;    
         snakeSpeed = 200;
+        clearBush()
+        bushArray = [];
 
         // Wyczyszczenie planszy z wyświetlonego punktu.
         pointCleaning();
         // Ustawienie pozycji węża.
         setSnakePosition();
+        
+        // Wygenerowanie krzaków na planszy oraz odświeżenie pozycji węża.
+        for( let i = 0; i < 4; i++) {
+            displaySnake()
+            displayBush()
+        }     
         
         // Odpalenie intervali - ruch węża i aktualizacja go, wyświetlanie punktów.
         snakeMovementInterval = snakeMovement();
@@ -454,15 +599,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Usunięcie wiadomości o przegranej grze oraz tła.
         loseScreenEl.innerText = '';
-        boardEl.classList.remove('is-transparent');
+        boardEl.classList.remove('is-transparent');    
     };
 
-    // Rozpoczęcie gry!
-    startEl.addEventListener('click', () => startGame());
-   
-    // Pauzowanie gry.
-    pauseEl.addEventListener('click', () => {   
-        // Blokada gry.
+    const pauseGame = () => {
         if (!pause) {       
             pause = true;
             pauseEl.innerText = 'Wznów';
@@ -473,7 +613,13 @@ document.addEventListener('DOMContentLoaded', () => {
             pauseEl.innerText = 'Pauza';
             boardEl.classList.remove('is-transparent');
         };
-        return pause;   
-    });
+        return pause; 
+    }
+
+    // Rozpoczęcie gry!
+    startEl.addEventListener('click', () => startGame());
+   
+    // Pauzowanie gry.
+    pauseEl.addEventListener('click', () => pauseGame());
 
 });

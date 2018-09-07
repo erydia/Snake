@@ -18,7 +18,10 @@ body {
     width: 802px;
     display: flex;
     flex-wrap: wrap;
-    border: 1px solid black
+    border: 1px solid black;
+    background-image: url(image/background.png);
+    background-position: 50% 50%;
+    background-size: cover; 
 }
 
 .tile-board {
@@ -75,25 +78,25 @@ button {
 }
 
 .snake-tail {
-    background-image: url(image/snake-tai.png);
+    background-image: url(image/snake-tail.png);
     background-position: 50% 50%;
     background-size: cover; 
 }
 
 .snake-torso {
-    background-image: url(image/snake-tors.png);
+    background-image: url(image/snake-torso.png);
     background-position: 50% 50%;
     background-size: cover; 
 }
 
 .snake-head {
-    background-image: url(image/snake-hea.png);
+    background-image: url(image/snake-head.png);
     background-position: 50% 50%;
     background-size: cover; 
 }
 
 .snake-edge {
-    background-image: url(image/snake-edg.png);
+    background-image: url(image/snake-edge.png);
     background-position: 50% 50%;
     background-size: cover; 
 }
@@ -113,3 +116,31 @@ button {
 .direction-right {
     transform: rotate(90deg);
 }
+
+.bush-1 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/bush-11.png)
+}
+
+.bush-2 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/bush-22.png)
+
+}
+
+.bush-3 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/bush-33.png)
+
+}
+
+.bush-4 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/bush-44.png)
+
+}
+
