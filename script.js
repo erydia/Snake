@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         key: 'ArrowDown',
         factor: 'plus',
         axis: 'y',
-    },];
+    }];
 
     // Aktualna pozycja węża na siatce względem osi X jak i Y.
     let snakePositionX;
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let snakeSpeed;
 
     // Tablica zawierająca obrazki stylizujące krzak.
-    const bushImage = ['bush-1', 'bush-2', 'bush-3', 'bush-4']
+    const bushImage = ['bush-1', 'bush-2', 'bush-3', 'bush-4'];
     // Tablica zawierająca wszystkie współrzędne krzaków.
     let bushArray = [];
     // Tablica zawierająca jedynie współrzędne jednego krzaka.
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stworzenie dynamicznie diva który będzie kafelkiem, wystylizowanie go.
             let tile = document.createElement('div');
             tile.classList.add('tile-board');
-            //tile.innerText = `x: ${x}, y: ${y}`
+            // tile.innerText = `x: ${x}, y: ${y}`
             // Dodanie kafelka do htmla. 
             boardEl.appendChild(tile);
             // Wypełnienie tablicy stworzonymi divami.
@@ -207,10 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Nasłuchiwanie na zmiane kierunku. 
+    // Nasłuchiwanie na zmiane kierunku oraz start i pauze gry. 
     document.addEventListener('keyup', (event) => {
+        // Start gry.
         if (event.key === 's') {
             startGame();
+        // Pauza gry.    
         } else if (event.key === 'p'){
             pauseGame();
         }
@@ -373,18 +375,46 @@ document.addEventListener('DOMContentLoaded', () => {
         };   
     };
 
+    const checkingTheBushPostion = () => {
+        // Sprawdzenie czy krzak nie pojawi się do 2 kratek przed wężem - jeśli tak nastąpi usunięcie go.
+        const el = snake[0] // Pierwszy element węża.
+        thisBush.find((thisEl) => {
+            if (direction === 'ArrowUp') {
+                if (arrayTiles[el.x][el.y-2] === thisEl || arrayTiles[el.x][el.y-1] === thisEl) {
+                    thisBush = [];
+                };
+            } else if (direction === 'ArrowDown') {
+                if (arrayTiles[el.x][el.y+2] === thisEl || arrayTiles[el.x][el.y+1] === thisEl) {
+                    thisBush = [];
+                };
+            } else if (direction === 'ArrowLeft') {
+                if (arrayTiles[el.x-2][el.y] === thisEl || arrayTiles[el.x-1][el.y] === thisEl) {
+                    thisBush = [];
+                };
+            } else if (direction === 'ArrowRight') {
+                if (arrayTiles[el.x+2][el.y] === thisEl || arrayTiles[el.x+1][el.y] === thisEl) {
+                    thisBush = [];
+                };
+            };  
+        });
+    }
+
     // Funkcja która wyświetla krzak w htmlu.  
     const displayBush = () => {    
         // Wylosowanie pozycji krzaka
         positionBush();
+        
         // Sprawdzenie czy wylosowany krzak nie znajduje się na wężu.
         snake.forEach((el) => {
             let thePosition = thisBush.find(thisEl => thisEl === el.div);
             // Jeśli się znajduje - usunięcie wygenerowanego krzaka.
             if(thePosition !== undefined) {
                 thisBush = [];
-            }   
-        })
+            };    
+        });
+        // Sprawdzenie czy krzak nie pojawi się do 2 kratek przed wężem - jeśli tak nastąpi usunięcie go.
+        checkingTheBushPostion()
+
         // Jeśli nie ma żadnego krzaka w tablicy dodaj go.
         if (bushArray.length === 0) {
             thisBush.forEach(el => bushArray.push(el));
@@ -395,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             bushArray.forEach((el) => {
                 let thePosition = thisBush.find(thisEl => thisEl === el);
                 // Jeśli się znajduję - usunięcie wygenerowanego krzaka.
-                if(thePosition !== undefined) {
+                if (thePosition !== undefined) {
                     thisBush = [];
                 };  
             });
@@ -493,7 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         checkingTheEdgeOfTheBoard(snakePositionY);
         // Sprawdzenie czy wąż nie uderza w siebie.
         checkingMoveSnake(snakePositionX, snakePositionY);
-        checkingTheBush(snakePositionX, snakePositionY)
+        // Sprawdzenie czy wąż nie uderza w krzak.
+        checkingTheBush(snakePositionX, snakePositionY);
         // Dodanie nowego elementu węża na początek tablicy.
         const object = { x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] };     
         snake.unshift(object);
@@ -578,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pointEl.innerText = `Punkty: ${point}`;
         thePointInBoard = false;    
         snakeSpeed = 200;
-        clearBush()
+        clearBush();
         bushArray = [];
 
         // Wyczyszczenie planszy z wyświetlonego punktu.
@@ -588,9 +619,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Wygenerowanie krzaków na planszy oraz odświeżenie pozycji węża.
         for( let i = 0; i < 4; i++) {
-            displaySnake()
-            displayBush()
-        }     
+            displaySnake();
+            displayBush();
+        };     
         
         // Odpalenie intervali - ruch węża i aktualizacja go, wyświetlanie punktów.
         snakeMovementInterval = snakeMovement();
@@ -614,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
             boardEl.classList.remove('is-transparent');
         };
         return pause; 
-    }
+    };
 
     // Rozpoczęcie gry!
     startEl.addEventListener('click', () => startGame());
