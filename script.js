@@ -62,6 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Zmienna która przechowuje informacje o szybkości węża.
     let snakeSpeed;
 
+    // Tablica zawierająca informacje o pozycji portali.
+    let portalArray = [];
+    // Zmienna która przechowuje informacje o tym czy wąż ma contact z portalem.
+    let firstPortalContact = false;
+
     // Tablica zawierająca obrazki stylizujące krzak.
     const bushImage = ['bush-1', 'bush-2', 'bush-3', 'bush-4'];
     // Tablica zawierająca wszystkie współrzędne krzaków.
@@ -79,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Stworzenie dynamicznie diva który będzie kafelkiem, wystylizowanie go.
             let tile = document.createElement('div');
             tile.classList.add('tile-board');
-            // tile.innerText = `x: ${x}, y: ${y}`
+            //tile.innerText = `x: ${x}, y: ${y}`
             // Dodanie kafelka do htmla. 
             boardEl.appendChild(tile);
             // Wypełnienie tablicy stworzonymi divami.
@@ -200,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let allClass = el.classList;
             // Usunięcie wszystkich zbędnych klas poza podstawową oraz klasą zawierającą punkt.
             for (let i = 1; i < allClass.length; i++) {
-                if ( el.classList.item(i) !== 'point-element' && el.classList.item(i) !== 'bush-1' && el.classList.item(i) !== 'bush-2' && el.classList.item(i) !== 'bush-3' && el.classList.item(i) !== 'bush-4') {
+                if ( el.classList.item(i) !== 'point-element' && el.classList.item(i) !== 'bush-1' && el.classList.item(i) !== 'bush-2' && el.classList.item(i) !== 'bush-3' && el.classList.item(i) !== 'bush-4' && el.classList.item(i) !== 'portal'){
                     el.classList.remove(el.classList.item(i));
                 };        
             };
@@ -272,25 +277,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (randomNumber < 0.25 ) {
             direction = 'ArrowLeft';
             for (let i = 0; i < initialSnakeLength; i++) {   
-            const object = {x: snakePositionX + i, y:snakePositionY, div: arrayTiles[snakePositionX + i][snakePositionY] }     
+            const object = {x: snakePositionX + i, y:snakePositionY, div: arrayTiles[snakePositionX + i][snakePositionY] };     
             snake.push(object);
             };
         } else if (randomNumber > 0.25 && randomNumber < 0.5) {
             direction = 'ArrowUp';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX, y:snakePositionY + i, div: arrayTiles[snakePositionX][snakePositionY + i] }     
+                const object = {x: snakePositionX, y:snakePositionY + i, div: arrayTiles[snakePositionX][snakePositionY + i] };    
                 snake.push(object);
             };
         } else if (randomNumber > 0.5 && randomNumber < 0.75) {
             direction = 'ArrowDown';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX, y:snakePositionY - i, div: arrayTiles[snakePositionX][snakePositionY - i] }     
+                const object = {x: snakePositionX, y:snakePositionY - i, div: arrayTiles[snakePositionX][snakePositionY - i] };     
                 snake.push(object);
             };  
         } else if (randomNumber > 0.75) {
             direction = 'ArrowRight';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX-i, y:snakePositionY, div: arrayTiles[snakePositionX -i][snakePositionY] }     
+                const object = {x: snakePositionX-i, y:snakePositionY, div: arrayTiles[snakePositionX -i][snakePositionY] };     
                 snake.push(object);
             };     
         }; 
@@ -311,18 +316,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let thePositionSnake = snake.find((el) => el.div === elementPosition);
         // Sprawdzenie czy punkt nie znajduję się na kafelku zawierającym krzak.
         let thePositionBush = bushArray.find((el) => el === elementPosition);
+        // Sprawdzenie czy punkt nie znajduję się na kafelku zawierającym portal.
+        let thePositionPortal = portalArray.find((el) => el.div === elementPosition);
         // Jeśli punkt ma tą samą pozycje co element węża - nie wyświetlaj go.
-        if (thePositionSnake !== undefined) {
+        if (thePositionSnake !== undefined || thePositionBush !== undefined || thePositionPortal !== undefined) {
             // Punkt nie ma wyznaczonej pozycji.
             elementPosition = '';
             // Punkt nie jest wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
         // Jeśli punkt ma taką samą pozycje co element krzaka - nie wyświetlaj go.    
-        } else if (thePositionBush !== undefined){
-            // Punkt nie ma wyznaczonej pozycji.
-            elementPosition = '';
-            // Punkt nie jest wyświetlony - zmiana zmiennej na false.
-            thePointInBoard = false;
         } else {  
             // Nadanie klasy sytlizującej punkt.   
             elementPosition.classList.add('point-element');
@@ -397,44 +399,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
             };  
         });
-    }
+    };
 
-    // Funkcja która wyświetla krzak w htmlu.  
+    // Funkcja która wyświetla krzaki w htmlu.  
     const displayBush = () => {    
-        // Wylosowanie pozycji krzaka
-        positionBush();
-        
-        // Sprawdzenie czy wylosowany krzak nie znajduje się na wężu.
-        snake.forEach((el) => {
-            let thePosition = thisBush.find(thisEl => thisEl === el.div);
-            // Jeśli się znajduje - usunięcie wygenerowanego krzaka.
-            if(thePosition !== undefined) {
-                thisBush = [];
-            };    
-        });
-        // Sprawdzenie czy krzak nie pojawi się do 2 kratek przed wężem - jeśli tak nastąpi usunięcie go.
-        checkingTheBushPostion()
-
-        // Jeśli nie ma żadnego krzaka w tablicy dodaj go.
-        if (bushArray.length === 0) {
-            thisBush.forEach(el => bushArray.push(el));
-            getBushStyle();
-            thisBush = [];
-        } else {
-            // Sprawdzednie czy pozycja wylosowanego krzaka nie znajduję się na krzaku już istniejącym.
-            bushArray.forEach((el) => {
-                let thePosition = thisBush.find(thisEl => thisEl === el);
-                // Jeśli się znajduję - usunięcie wygenerowanego krzaka.
-                if (thePosition !== undefined) {
+        for( let i = 0; i < 4; i++) {
+            displaySnake();
+            // Wylosowanie pozycji krzaka
+            positionBush();
+            
+            // Sprawdzenie czy wylosowany krzak nie znajduje się na wężu.
+            snake.forEach((el) => {
+                let thePosition = thisBush.find((thisEl) => thisEl === el.div);
+                // Jeśli się znajduje - usunięcie wygenerowanego krzaka.
+                if(thePosition !== undefined) {
                     thisBush = [];
-                };  
+                };    
             });
-            // Dodanie krzaka do tablicy.
-            thisBush.forEach(el => bushArray.push(el));
-            // Wystylizowanie go.
-            getBushStyle();
-            thisBush = [];
-        };   
+            // Sprawdzenie czy krzak nie pojawi się do 2 kratek przed wężem - jeśli tak nastąpi usunięcie go.
+            checkingTheBushPostion();
+
+            // Jeśli nie ma żadnego krzaka w tablicy dodaj go.
+            if (bushArray.length === 0) {
+                thisBush.forEach((el) => bushArray.push(el));
+                getBushStyle();
+                thisBush = [];
+            } else {
+                // Sprawdzednie czy pozycja wylosowanego krzaka nie znajduję się na krzaku już istniejącym.
+                bushArray.forEach((el) => {
+                    let thePosition = thisBush.find((thisEl) => thisEl === el);
+                    // Jeśli się znajduję - usunięcie wygenerowanego krzaka.
+                    if (thePosition !== undefined) {
+                        thisBush = [];
+                    };  
+                });
+                // Dodanie krzaka do tablicy.
+                thisBush.forEach((el) => bushArray.push(el));
+                // Wystylizowanie go.
+                getBushStyle();
+                thisBush = [];
+            };
+        };     
     };
 
     // Funkcja która czyści wyświetlone krzaki na planszy.
@@ -447,7 +452,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.remove(el.classList.item(i));     
             };
         });
-    };    
+        // Wyczyszczenie tablicy.
+        bushArray = [];
+    };   
+    
+    // Funkcja która czyści wyświetlone portale na planszy.
+    const clearPortal = () => {
+        portalArray.forEach((el) => {
+            // Przypisanie do zmiennej klas.
+            let allClass = el.div.classList;
+            // Usunięcie wszystkich zbędnych klas.
+            for (let i = 1; i < allClass.length; i++) {
+                el.div.classList.remove(el.div.classList.item(i));     
+            };
+        });
+        // Wyczyszczenie tablicy.
+        portalArray = [];
+    };
 
     // Funkcja która sprawdza czy wąż uderzył w krzak. 
     const checkingTheBush = (x, y) => {
@@ -455,6 +476,41 @@ document.addEventListener('DOMContentLoaded', () => {
         // Jeśli uderzył - gra zostaje przegrana.
         if (thisHit !== undefined) {
             loseGame();
+        };
+    };
+
+    // Funkcja która wyświetla portale na planszy.
+    const displayPortal = (axis) => {
+        // Wylosowanie pozycji portalu.
+        let portalPosition = Math.ceil(Math.random() * 18);  
+        let randomNumber = Math.random();
+        let portal;
+        // Dodanie portalu na osi X.
+        if (axis === 'x') {
+            if (randomNumber < 0.5) {
+                portal = arrayTiles[0][portalPosition];
+                portal.classList.add('portal');
+                const object = { x: 0, y: portalPosition, div: portal, direction: 'ArrowRight' };     
+                portalArray.push(object);
+            } else {
+                portal = arrayTiles[19][portalPosition];
+                portal.classList.add('portal');
+                const object = { x: 19, y: portalPosition, div: portal, direction: 'ArrowLeft' };     
+                portalArray.push(object);
+            };
+        // Dodanie portalu na osi Y.    
+        } else if (axis === 'y') {
+            if (randomNumber < 0.5) {
+                portal = arrayTiles[portalPosition][0];
+                portal.classList.add('portal');
+                const object = { x: portalPosition, y: 0, div: portal, direction: 'ArrowDown' };     
+                portalArray.push(object);
+            } else {
+                portal = arrayTiles[portalPosition][19];
+                portal.classList.add('portal');
+                const object = { x: portalPosition, y: 19, div: portal, direction: 'ArrowUp' };     
+                portalArray.push(object);
+            };
         };
     };
 
@@ -484,6 +540,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (position < 0 || position > (boardSize - 1)) {
             loseGame();
         };
+    };
+
+    // Funckaj która sprawdza czy wąż wszedł w portal - jeśli nie sprawdza czy uderzył w krawędź.
+    const checkingThePortal = (x, y) => {
+        // Sprawdzenie czy wąż jest na terenie portala.
+        const theHit = portalArray.find((el) => el.div === snake[0].div);
+        if (theHit !== undefined) {
+            // Wyszukanie przeciwnego portala.
+            const thisPortal = portalArray.find((el) => el !== theHit);
+            // Wyjście węża przeciwnym portalem oraz zmiana kierunku.
+            if (!firstPortalContact) {
+                firstPortalContact = true;    
+                snakePositionX = thisPortal.x;
+                snakePositionY = thisPortal.y;
+                direction = thisPortal.direction;
+            };
+        } else {
+            // Sprawdzenie czy wąż uderzył w krawędź X.
+            checkingTheEdgeOfTheBoard(x);
+            // Sprawdzenie czy wąż uderzył w krawędź Y.
+            checkingTheEdgeOfTheBoard(y);
+        };
+        // Odświeżenie węża.
+        displaySnake();
+    };
+
+    // Funkcja która aktualizuje kontakt węża z portalem.
+    const updatePortal = () => {
+        // Sprawdzenie czy pierwszy fragmenet węża jest poza terenem portali.
+        const thePortal = portalArray.find((thisEl) => thisEl.div === snake[0].div)
+        if(thePortal === undefined) {
+            firstPortalContact = false;
+        };    
     };
 
     // Funkcja która sprawdza czy wąż się nie zaplątał.
@@ -518,9 +607,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let theDirection = directionArray.find((el) => el.key === direction);
         // Aktualizacja pozycji węża.
         updatePosition(theDirection.axis, theDirection.factor);
-        // Sprawdzenie czy wąż nie uderza w krawędź.
-        checkingTheEdgeOfTheBoard(snakePositionX);
-        checkingTheEdgeOfTheBoard(snakePositionY);
+        // Sprawdzenie czy wąż nie uderza w krawędź badź w portal.
+        checkingThePortal(snakePositionX, snakePositionY)
         // Sprawdzenie czy wąż nie uderza w siebie.
         checkingMoveSnake(snakePositionX, snakePositionY);
         // Sprawdzenie czy wąż nie uderza w krzak.
@@ -573,7 +661,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Ruch węża zgodnie z wybranym kierunkiem.
                 movements();
                 // Aktualzacja długości węża przy zmianie pozycji.
-                updateLenghtSnake();             
+                updateLenghtSnake();
+                // Aktualizacja informacji o kontakcie węża z portalami.
+                updatePortal();             
             };    
         }, snakeSpeed);
     };
@@ -610,18 +700,19 @@ document.addEventListener('DOMContentLoaded', () => {
         thePointInBoard = false;    
         snakeSpeed = 200;
         clearBush();
-        bushArray = [];
-
+        clearPortal();
+                
         // Wyczyszczenie planszy z wyświetlonego punktu.
         pointCleaning();
         // Ustawienie pozycji węża.
         setSnakePosition();
         
-        // Wygenerowanie krzaków na planszy oraz odświeżenie pozycji węża.
-        for( let i = 0; i < 4; i++) {
-            displaySnake();
-            displayBush();
-        };     
+        // Wyświetlenie portali na osi X jak i Y.
+        displayPortal('x');
+        displayPortal('y');
+
+        // Wygenerowanie krzaków na planszy.
+        displayBush(); 
         
         // Odpalenie intervali - ruch węża i aktualizacja go, wyświetlanie punktów.
         snakeMovementInterval = snakeMovement();

@@ -120,27 +120,34 @@ button {
 .bush-1 { 
     background-position: 50% 50%;
     background-size: cover; 
-    background-image: url(image/bush-1.png)
+    background-image: url(image/bush-1.png);
 }
 
 .bush-2 { 
     background-position: 50% 50%;
     background-size: cover; 
-    background-image: url(image/bush-2.png)
+    background-image: url(image/bush-2.png);
 
 }
 
 .bush-3 { 
     background-position: 50% 50%;
     background-size: cover; 
-    background-image: url(image/bush-3.png)
-
+    background-image: url(image/bush-3.png);
 }
 
 .bush-4 { 
     background-position: 50% 50%;
     background-size: cover; 
-    background-image: url(image/bush-4.png)
-
+    background-image: url(image/bush-4.png);
 }
+
+.portal {
+    width: 40px;
+    height: 40px;
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/portal.png);
+}
+
 
