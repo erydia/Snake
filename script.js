@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let snakePositionX;
     let snakePositionY;
     // Zmienna która zawiera pozycje wyświetlonego punktu na planszy.
-    let elementPosition;
+    let pointPosition;
     // Zmienna która zwiera informacje o tym czy punkt jest już wyświetlony na planszy; domyślnie - false.
     let thePointInBoard = false;
     // Zmienna która zawiera informacje o tym czy punkt został zjedzony.
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const displaySnake = () => {
         if (!theGameIsLost) {
             // Wyczyszczenie planszy ze zbędnych klas.
-            boardCleaning();
+            snakeCleaning();
 
             // Zmienne pomocniczne trzymające elementy węża do porównywania.
             let oldElementIndex;
@@ -155,6 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const isOldDefined = oldElementIndex !== undefined;
         const isNewDefined = newElemenetIndex !== undefined;
 
+        currentElementIndex.div.classList.add('snake');
+
         if (!isOldDefined) {
             // Stylizacja główki węża.
             setSnakePartImage(currentElementIndex, newElemenetIndex, currentElementIndex, ['snake-head']);
@@ -172,11 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const isPointingDownDirectionUp = currentElementIndex.y < newElemenetIndex.y;
             const isPointingDownDirectionDown = currentElementIndex.y > newElemenetIndex.y;
 
+
             if (isPointingUpDirectionUp && isPointingLeftDirectionRight || isPointingRightDirectionLeft && isPointingDownDirectionDown) {
                  currentElementIndex.div.classList.add('snake-edge');
                  currentElementIndex.div.classList.add('direction-up');
              } else if (isPointingUpDirectionDown && isPointingLeftDirectionLeft || isPointingRightDirectionRight && isPointingDownDirectionUp) {
-                currentElementIndex.div.classList.add('snake-edge');
+                 currentElementIndex.div.classList.add('snake-edge');
                  currentElementIndex.div.classList.add('direction-down');
              } else if (isPointingRightDirectionLeft && isPointingDownDirectionUp || isPointingUpDirectionDown && isPointingLeftDirectionRight) {
                  currentElementIndex.div.classList.add('snake-edge');
@@ -197,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };        
     };
 
-    // Funkcja która usuwa wszystkie zbędne klasy z kafelków.
+    // Funkcja która usuwa wszystkie klasy z kafelków po przegraniu gry oraz resetuje tablice.
     const boardCleaning = () => {
         const tileBoardEl = document.querySelectorAll('.tile-board')
         tileBoardEl.forEach((el) => {
@@ -205,9 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
             let allClass = el.classList;
             // Usunięcie wszystkich zbędnych klas poza podstawową oraz klasą zawierającą punkt.
             for (let i = 1; i < allClass.length; i++) {
-                if ( el.classList.item(i) !== 'point-element' && el.classList.item(i) !== 'bush-1' && el.classList.item(i) !== 'bush-2' && el.classList.item(i) !== 'bush-3' && el.classList.item(i) !== 'bush-4' && el.classList.item(i) !== 'portal'){
-                    el.classList.remove(el.classList.item(i));
-                };        
+                el.classList.remove(el.classList.item(i));      
+            };
+            el.innerHTML = '';
+        });
+        portalArray = [];
+        bushArray = [];
+        pointPosition = '';
+    };
+
+    // Funkcja która usuwa wszystkie klasy z kafelków zajmowanych przez węża.
+    const snakeCleaning = () => {
+        snake.forEach((el) => {
+            let allClass = el.div.classList;
+            for (let i = 0; i < allClass.length; i++) {
+                el.div.classList.remove(el.div.classList.item(i));       
             };
         });
     };
@@ -246,15 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
         directionsMovements.splice(forbiddenDirectionIndex, 1);
     };
 
-    // Funkcja która czyści plansze z punktów.
-    const pointCleaning = () => {
-        const tileBoardEl = document.querySelectorAll('.tile-board');
-        tileBoardEl.forEach((el) => {
-            el.classList.remove('point-element');
-        }); 
-        elementPosition = '';
-    };
-
     // Tablica która przechowuje kafelki na których wąż się znajduje.
     let snake = [];
     // Ustanona długość węża.
@@ -276,26 +282,34 @@ document.addEventListener('DOMContentLoaded', () => {
         // 25% szansy na wylosowanie kierunku losowo.
         if (randomNumber < 0.25 ) {
             direction = 'ArrowLeft';
-            for (let i = 0; i < initialSnakeLength; i++) {   
-            const object = {x: snakePositionX + i, y:snakePositionY, div: arrayTiles[snakePositionX + i][snakePositionY] };     
-            snake.push(object);
+            for (let i = 0; i < initialSnakeLength; i++) {
+                let snakeElement = document.createElement('div')
+                arrayTiles[snakePositionX + i][snakePositionY].appendChild(snakeElement)   
+                const object = {x: snakePositionX + i, y:snakePositionY, tilePosition: arrayTiles[snakePositionX + i][snakePositionY], div: snakeElement };     
+                snake.push(object);
             };
         } else if (randomNumber > 0.25 && randomNumber < 0.5) {
             direction = 'ArrowUp';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX, y:snakePositionY + i, div: arrayTiles[snakePositionX][snakePositionY + i] };    
+                let snakeElement = document.createElement('div')
+                arrayTiles[snakePositionX][snakePositionY + i].appendChild(snakeElement)
+                const object = {x: snakePositionX, y:snakePositionY + i, tilePosition: arrayTiles[snakePositionX][snakePositionY + i], div: snakeElement };    
                 snake.push(object);
             };
         } else if (randomNumber > 0.5 && randomNumber < 0.75) {
             direction = 'ArrowDown';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX, y:snakePositionY - i, div: arrayTiles[snakePositionX][snakePositionY - i] };     
+                let snakeElement = document.createElement('div')
+                arrayTiles[snakePositionX][snakePositionY - i].appendChild(snakeElement)
+                const object = {x: snakePositionX, y:snakePositionY - i, tilePosition: arrayTiles[snakePositionX][snakePositionY - i], div: snakeElement };     
                 snake.push(object);
             };  
         } else if (randomNumber > 0.75) {
             direction = 'ArrowRight';
             for (let i = 0; i < initialSnakeLength; i++) {
-                const object = {x: snakePositionX-i, y:snakePositionY, div: arrayTiles[snakePositionX -i][snakePositionY] };     
+                let snakeElement = document.createElement('div')
+                arrayTiles[snakePositionX -i][snakePositionY].appendChild(snakeElement)
+                const object = {x: snakePositionX-i, y:snakePositionY, tilePosition: arrayTiles[snakePositionX -i][snakePositionY] , div: snakeElement };     
                 snake.push(object);
             };     
         }; 
@@ -306,43 +320,42 @@ document.addEventListener('DOMContentLoaded', () => {
         // Punkt został wyświetlony - zmianna zmiennej na true.
         thePointInBoard = true;
         thePointIsEaten = false;
-        // Zmienna która trzyma odpowiednie wyrażenie do losowania pozycji.
         // Losowanie pozycji dla punktu na osi x jak i y.
-        let elementPositionX = Math.floor(Math.random() * (boardSize - 1));
-        let elementPositionY = Math.floor(Math.random() * (boardSize - 1));
+        let pointPositionX = Math.floor(Math.random() * (boardSize - 1));
+        let pointPositionY = Math.floor(Math.random() * (boardSize - 1));
         // Przypisanie do zmiennej kafelka z wylosowaną pozycją.
-        elementPosition = arrayTiles[elementPositionX][elementPositionY];
+        pointPosition = arrayTiles[pointPositionX][pointPositionY];
         // Sprawdzenie czy punkt nie znajduję się na kafelku zajmowanym przez węża.
-        let thePositionSnake = snake.find((el) => el.div === elementPosition);
+        let thePositionSnake = snake.find((el) => el.div === pointPosition);
         // Sprawdzenie czy punkt nie znajduję się na kafelku zawierającym krzak.
-        let thePositionBush = bushArray.find((el) => el === elementPosition);
+        let thePositionBush = bushArray.find((el) => el === pointPosition);
         // Sprawdzenie czy punkt nie znajduję się na kafelku zawierającym portal.
-        let thePositionPortal = portalArray.find((el) => el.div === elementPosition);
+        let thePositionPortal = portalArray.find((el) => el.div === pointPosition);
         // Jeśli punkt ma tą samą pozycje co element węża - nie wyświetlaj go.
         if (thePositionSnake !== undefined || thePositionBush !== undefined || thePositionPortal !== undefined) {
             // Punkt nie ma wyznaczonej pozycji.
-            elementPosition = '';
+            pointPosition = '';
             // Punkt nie jest wyświetlony - zmiana zmiennej na false.
             thePointInBoard = false;
         // Jeśli punkt ma taką samą pozycje co element krzaka - nie wyświetlaj go.    
         } else {  
             // Nadanie klasy sytlizującej punkt.   
-            elementPosition.classList.add('point-element');
+            pointPosition.classList.add('point-element');
         };
     };
 
     // Funkcja która sprawdza czy punkt został zjedzony przez węża.
     const checkingPointElement = () => {
         // Sprawdzenie czy wąż znajduję się na tej samej pozycji co punkt.
-        let thisPoint = snake.find((el) => el.div === elementPosition);
+        let thisPoint = snake.find((el) => el.tilePosition === pointPosition);
         // Jeśli tak - gracz dostaje punkt, wąż powiększa się a element zostaje usunięty z planszy.
         if (thisPoint !== undefined) {
             // Usunięcie klasy stylizujacej punkt.
-            elementPosition.classList.remove('point-element');
+            pointPosition.classList.remove('point-element');
             // Punkt został zjedzony - zmiana zmiennej na true.
             thePointIsEaten = true;
             // Pozozycja punktu resetuje się.
-            elementPosition = '';
+            pointPosition = '';
             // Dodanie punktu do puli.
             point += 1;
             // Wyświetlenie punktów w htmlu.
@@ -410,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Sprawdzenie czy wylosowany krzak nie znajduje się na wężu.
             snake.forEach((el) => {
-                let thePosition = thisBush.find((thisEl) => thisEl === el.div);
+                let thePosition = thisBush.find((thisEl) => thisEl === el.tilePosition);
                 // Jeśli się znajduje - usunięcie wygenerowanego krzaka.
                 if(thePosition !== undefined) {
                     thisBush = [];
@@ -442,34 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };     
     };
 
-    // Funkcja która czyści wyświetlone krzaki na planszy.
-    const clearBush = () => {
-        bushArray.forEach((el) => {
-            // Przypisanie do zmiennej klas.
-            let allClass = el.classList;
-            // Usunięcie wszystkich zbędnych klas.
-            for (let i = 1; i < allClass.length; i++) {
-                el.classList.remove(el.classList.item(i));     
-            };
-        });
-        // Wyczyszczenie tablicy.
-        bushArray = [];
-    };   
-    
-    // Funkcja która czyści wyświetlone portale na planszy.
-    const clearPortal = () => {
-        portalArray.forEach((el) => {
-            // Przypisanie do zmiennej klas.
-            let allClass = el.div.classList;
-            // Usunięcie wszystkich zbędnych klas.
-            for (let i = 1; i < allClass.length; i++) {
-                el.div.classList.remove(el.div.classList.item(i));     
-            };
-        });
-        // Wyczyszczenie tablicy.
-        portalArray = [];
-    };
-
     // Funkcja która sprawdza czy wąż uderzył w krzak. 
     const checkingTheBush = (x, y) => {
         let thisHit = bushArray.find((el) => el === arrayTiles[x][y]);
@@ -480,39 +465,57 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Funkcja która wyświetla portale na planszy.
-    const displayPortal = (axis) => {
+    const generatingThePortal = (axis) => {
         // Wylosowanie pozycji portalu.
-        let portalPosition = Math.ceil(Math.random() * 18);  
+        let portalRandomPosition = Math.ceil(Math.random() * 18);  
         let randomNumber = Math.random();
-        let portal;
+        let portalPosition;
         // Dodanie portalu na osi X.
         if (axis === 'x') {
             if (randomNumber < 0.5) {
-                portal = arrayTiles[0][portalPosition];
-                portal.classList.add('portal');
-                const object = { x: 0, y: portalPosition, div: portal, direction: 'ArrowRight' };     
+                portalPosition = arrayTiles[0][portalRandomPosition];
+                let portalBox = document.createElement('div')
+                portalBox.classList.add('portal');
+                portalPosition.appendChild(portalBox);
+                const object = { x: 0, y: portalRandomPosition, tilePosition: portalPosition, div: '', direction: 'ArrowRight' };     
                 portalArray.push(object);
             } else {
-                portal = arrayTiles[19][portalPosition];
-                portal.classList.add('portal');
-                const object = { x: 19, y: portalPosition, div: portal, direction: 'ArrowLeft' };     
+                portalPosition = arrayTiles[19][portalRandomPosition];
+                let portalBox = document.createElement('div')
+                portalBox.classList.add('portal');
+                portalPosition.appendChild(portalBox);
+                const object = { x: 19, y: portalRandomPosition, tilePosition: portalPosition, div: '', direction: 'ArrowLeft' };     
                 portalArray.push(object);
             };
         // Dodanie portalu na osi Y.    
         } else if (axis === 'y') {
             if (randomNumber < 0.5) {
-                portal = arrayTiles[portalPosition][0];
-                portal.classList.add('portal');
-                const object = { x: portalPosition, y: 0, div: portal, direction: 'ArrowDown' };     
+                portalPosition = arrayTiles[portalRandomPosition][0];
+                let portalBox = document.createElement('div')
+                portalBox.classList.add('portal');
+                portalPosition.appendChild(portalBox);
+                const object = { x: portalRandomPosition, y: 0, tilePosition: portalPosition, div: '', direction: 'ArrowDown' };     
                 portalArray.push(object);
             } else {
-                portal = arrayTiles[portalPosition][19];
-                portal.classList.add('portal');
-                const object = { x: portalPosition, y: 19, div: portal, direction: 'ArrowUp' };     
+                portalPosition = arrayTiles[portalRandomPosition][19];
+                let portalBox = document.createElement('div')
+                portalBox.classList.add('portal');
+                portalPosition.appendChild(portalBox);
+                const object = { x: portalRandomPosition, y: 19, tilePosition: portalPosition, div: '', direction: 'ArrowUp' };     
                 portalArray.push(object);
             };
         };
     };
+
+   /* const displayPortal = () => {
+        portalArray.forEach((el) => {
+            let portalBox = document.createElement('div')
+            portalBox.classList.add('portal');
+            arrayTiles[el.x][el.y].appendChild(portalBox)
+        })
+    }*/
+
+
 
     // Funkcja która aktualizuje szybkość węża.
     const updateSnakeSpeed = () => {
@@ -545,7 +548,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funckaj która sprawdza czy wąż wszedł w portal - jeśli nie sprawdza czy uderzył w krawędź.
     const checkingThePortal = (x, y) => {
         // Sprawdzenie czy wąż jest na terenie portala.
-        const theHit = portalArray.find((el) => el.div === snake[0].div);
+        const theHit = portalArray.find((el) => el.tilePosition === snake[0].tilePosition);
         if (theHit !== undefined) {
             // Wyszukanie przeciwnego portala.
             const thisPortal = portalArray.find((el) => el !== theHit);
@@ -555,6 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 snakePositionX = thisPortal.x;
                 snakePositionY = thisPortal.y;
                 direction = thisPortal.direction;
+                /*portalArray = [];
+                generatingThePortal('x');
+                generatingThePortal('y');*/
             };
         } else {
             // Sprawdzenie czy wąż uderzył w krawędź X.
@@ -569,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funkcja która aktualizuje kontakt węża z portalem.
     const updatePortal = () => {
         // Sprawdzenie czy pierwszy fragmenet węża jest poza terenem portali.
-        const thePortal = portalArray.find((thisEl) => thisEl.div === snake[0].div)
+        const thePortal = portalArray.find((el) => el.tilePosition === snake[0].tilePosition)
         if(thePortal === undefined) {
             firstPortalContact = false;
         };    
@@ -578,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Funkcja która sprawdza czy wąż się nie zaplątał.
     const checkingMoveSnake = (x, y) => {
         // Sprawdzenie czy pola na których jest wąż pokrywają się z polem jakie wąż zamierza teraz odwiedzić.
-        let thisHit = snake.find((el) => el.div === arrayTiles[x][y]);
+        let thisHit = snake.find((el) => el.tilePosition === arrayTiles[x][y]);
         // Jeśli wąż trafił w siebie gra zostaje przerwana.
         if (thisHit !== undefined) {
             loseGame();
@@ -613,9 +619,13 @@ document.addEventListener('DOMContentLoaded', () => {
         checkingMoveSnake(snakePositionX, snakePositionY);
         // Sprawdzenie czy wąż nie uderza w krzak.
         checkingTheBush(snakePositionX, snakePositionY);
-        // Dodanie nowego elementu węża na początek tablicy.
-        const object = { x: snakePositionX, y: snakePositionY, div: arrayTiles[snakePositionX][snakePositionY] };     
-        snake.unshift(object);
+        if (!theGameIsLost) {
+            let snakeElement = document.createElement('div')
+            arrayTiles[snakePositionX][snakePositionY].appendChild(snakeElement)
+            // Dodanie nowego elementu węża na początek tablicy.
+            const object = { x: snakePositionX, y: snakePositionY, tilePosition: arrayTiles[snakePositionX][snakePositionY], div: snakeElement };     
+            snake.unshift(object);
+        }    
     }; 
 
     // Funkcja, która aktualizuje długość węża przy ruchu.
@@ -625,8 +635,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Usunięcie klasy stylizującej węża z ostatniego elementu tablicy.
             let lenghtSnake = snake.length;
             const lastElementIndex = lenghtSnake - 1;
-            // Usunięcie ostatniego elementu z tablicy.
-            snake.splice(lastElementIndex, 1);
+            const snakeElement = snake[lastElementIndex].tilePosition.querySelector('.snake');
+            console.log('snakeElement', snakeElement, snake[lastElementIndex].tilePosition);
+            if (snakeElement !== null) {
+                snake[lastElementIndex].tilePosition.removeChild(snakeElement);
+            }
+            snake.splice(lastElementIndex, 1);   
         };   
         displaySnake();
     };
@@ -660,10 +674,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateSnakeSpeed();
                 // Ruch węża zgodnie z wybranym kierunkiem.
                 movements();
+                if (!theGameIsLost) {
                 // Aktualzacja długości węża przy zmianie pozycji.
-                updateLenghtSnake();
+                    updateLenghtSnake();
+                };
                 // Aktualizacja informacji o kontakcie węża z portalami.
-                updatePortal();             
+                updatePortal();
             };    
         }, snakeSpeed);
     };
@@ -699,21 +715,18 @@ document.addEventListener('DOMContentLoaded', () => {
         pointEl.innerText = `Punkty: ${point}`;
         thePointInBoard = false;    
         snakeSpeed = 200;
-        clearBush();
-        clearPortal();
-                
-        // Wyczyszczenie planszy z wyświetlonego punktu.
-        pointCleaning();
+        boardCleaning();
+
         // Ustawienie pozycji węża.
         setSnakePosition();
         
         // Wyświetlenie portali na osi X jak i Y.
-        displayPortal('x');
-        displayPortal('y');
+        generatingThePortal('x');
+        generatingThePortal('y');
 
         // Wygenerowanie krzaków na planszy.
         displayBush(); 
-        
+
         // Odpalenie intervali - ruch węża i aktualizacja go, wyświetlanie punktów.
         snakeMovementInterval = snakeMovement();
         drawingPointElementInHtmlInterval = drawingPointElementInHtml();
