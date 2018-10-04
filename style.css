@@ -148,6 +148,49 @@ button {
     background-position: 50% 50%;
     background-size: cover; 
     background-image: url(image/portal.png);
+    position: absolute;
+    z-index: 3;
+
 }
 
+.mud-1 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-1.png);
+}
 
+.mud-2 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-2.png);
+
+}
+
+.mud-3 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-3.png);
+}
+
+.mud-4 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-4.png);
+}
+
+.mud-5 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-5.png);
+}
+
+.mud-6 { 
+    background-position: 50% 50%;
+    background-size: cover; 
+    background-image: url(image/mud-6.png);
+}
+
+.tile-board div {
+    height: 40px;
+    width: 40px;
+}
